@@ -1,10 +1,15 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract HenkakuBadge is ERC1155 {
+contract HenkakuBadge is ERC1155, Ownable {
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
+
     struct Badge {
         bool mintable;
         bool transerable;
@@ -12,8 +17,7 @@ contract HenkakuBadge is ERC1155 {
         string tokenURI;
     }
 
-    uint256 tokenId;
-    mapping(uint256 => Badge) bages;
+    mapping(uint256 => Badge) public bages;
 
     constructor() ERC1155("") {}
 
@@ -21,9 +25,13 @@ contract HenkakuBadge is ERC1155 {
 
     function badgeOf(address _of) public returns (Badge[] memory) {}
 
-    // only by owner
-    function createBadge() public {
-        // it can be setBadge Attribute
+    event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
+
+    function createBadge(Badge memory _badge) public onlyOwner {
+        _tokenIds.increment();
+        uint256 newItemId = _tokenIds.current();
+        bages[newItemId] = _badge;
+        emit NewBadge(newItemId, _badge.mintable, _badge.amount);
     }
 
     // only by owner
