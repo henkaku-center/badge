@@ -100,7 +100,7 @@ describe("HenkakuBadge", function () {
     });
   });
 
-  describe('setERC20', () => {
+  describe("setERC20", () => {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
@@ -111,22 +111,22 @@ describe("HenkakuBadge", function () {
       await badgeContract.createBadge(badgeArgs);
     });
 
-
-    it('setErc20 successfully', async () => {
-      await badgeContract.setERC20(ethers.constants.AddressZero)
-      expect(await badgeContract.erc20()).to.be.eq(ethers.constants.AddressZero)
-    })
-
+    it("setErc20 successfully", async () => {
+      await badgeContract.setERC20(ethers.constants.AddressZero);
+      expect(await badgeContract.erc20()).to.be.eq(
+        ethers.constants.AddressZero
+      );
+    });
 
     it("reverts with none owner", async () => {
       await expect(
         badgeContract.connect(alice).setERC20(ethers.constants.AddressZero)
       ).to.be.reverted;
-      expect(await badgeContract.erc20()).to.be.eq(erc20.address)
-    })
-  })
+      expect(await badgeContract.erc20()).to.be.eq(erc20.address);
+    });
+  });
 
-  describe('mint', () => {
+  describe("mint", () => {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
@@ -137,26 +137,34 @@ describe("HenkakuBadge", function () {
       await badgeContract.createBadge(badgeArgs);
     });
 
-    it('mint successfully', async () => {
-      await erc20.approve(badgeContract.address, ethers.utils.parseUnits('10000', 18))
-      await badgeContract.mint(1)
-      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1)
-    })
+    it("mint successfully", async () => {
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await badgeContract.mint(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+    });
 
-    it('reverts with insufficient amount', async () => {
-      await erc20.connect(alice).approve(badgeContract.address, ethers.utils.parseUnits('10000', 18))
-      await expect(badgeContract.connect(alice).mint(1)).to.be.revertedWith('INSUFFICIENT BALANCE')
-      expect(await badgeContract.connect(alice).balanceOf(alice.address, 1)).to.be.eq(0)
-    })
+    it("reverts with insufficient amount", async () => {
+      await erc20
+        .connect(alice)
+        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
+      await expect(badgeContract.connect(alice).mint(1)).to.be.revertedWith(
+        "INSUFFICIENT BALANCE"
+      );
+      expect(
+        await badgeContract.connect(alice).balanceOf(alice.address, 1)
+      ).to.be.eq(0);
+    });
 
     it("reverts with non existed badge", async () => {
-      await erc20.approve(badgeContract.address, ethers.utils.parseUnits('10000', 18))
-      await expect(
-        badgeContract.mint(0)
-      ).to.revertedWith("Badge Not Exists");
-      await expect(
-        badgeContract.mint(10)
-      ).to.revertedWith("Badge Not Exists");
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await expect(badgeContract.mint(0)).to.revertedWith("Badge Not Exists");
+      await expect(badgeContract.mint(10)).to.revertedWith("Badge Not Exists");
     });
-  })
+  });
 });
