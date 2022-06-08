@@ -1,10 +1,15 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract HenkakuBadge is ERC1155 {
+contract HenkakuBadge is ERC1155, Ownable {
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
+
     struct Badge {
         bool mintable;
         bool transerable;
@@ -12,22 +17,37 @@ contract HenkakuBadge is ERC1155 {
         string tokenURI;
     }
 
-    uint256 tokenId;
-    mapping(uint256 => Badge) bages;
+    mapping(uint256 => Badge) public badges;
 
     constructor() ERC1155("") {}
 
-    function badges() public view returns (Badge[] memory) {}
+    function getBadges() public view returns (Badge[] memory) {}
 
     function badgeOf(address _of) public returns (Badge[] memory) {}
 
-    // only by owner
-    function createBadge() public {
-        // it can be setBadge Attribute
+    event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
+    event UpdateBadge(uint256 indexed id, bool mintable);
+
+    function createBadge(Badge memory _badge) public onlyOwner {
+        _tokenIds.increment();
+        uint256 newItemId = _tokenIds.current();
+        badges[newItemId] = _badge;
+        emit NewBadge(newItemId, _badge.mintable, _badge.amount);
     }
 
-    // only by owner
-    function setBadgeAttribute(uint256 _tokenId, Badge memory _badge) public {}
+    function updateBadgeAttr(
+        uint256 _tokenId,
+        bool _mintable,
+        string memory _tokenURI
+    ) public onlyOwner {
+        require(
+            _tokenId > 0 && _tokenId <= _tokenIds.current(),
+            "Badge Not Exists"
+        );
+        badges[_tokenId].mintable = _mintable;
+        badges[_tokenId].tokenURI = _tokenURI;
+        emit UpdateBadge(_tokenId, _mintable);
+    }
 
     function mint(uint256 _id, uint256 _amount) public {
         // require for all badge attribute exists
@@ -73,6 +93,6 @@ contract HenkakuBadge is ERC1155 {
         override
         returns (string memory)
     {
-        return bages[_tokenId].tokenURI;
+        return badges[_tokenId].tokenURI;
     }
 }
