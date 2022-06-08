@@ -100,6 +100,32 @@ describe("HenkakuBadge", function () {
     });
   });
 
+  describe('setERC20', () => {
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transerable: false,
+        amount: ethers.utils.parseUnits("100", 18),
+        tokenURI: "https://example.com",
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+
+    it('setErc20 successfully', async () => {
+      await badgeContract.setERC20(ethers.constants.AddressZero)
+      expect(await badgeContract.erc20()).to.be.eq(ethers.constants.AddressZero)
+    })
+
+
+    it("reverts with none owner", async () => {
+      await expect(
+        badgeContract.connect(alice).setERC20(ethers.constants.AddressZero)
+      ).to.be.reverted;
+      expect(await badgeContract.erc20()).to.be.eq(erc20.address)
+    })
+  })
+
   describe('mint', () => {
     beforeEach(async () => {
       const badgeArgs = {
