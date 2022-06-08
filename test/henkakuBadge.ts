@@ -5,13 +5,11 @@ import { ethers } from "hardhat";
 describe("HenkakuBadge", function () {
   let BadgeContract: any,
     badgeContract: Contract,
-    owner: Signer,
     alice: Signer,
     bob: Signer;
 
   beforeEach(async () => {
-    /*eslint no-unused-vars: "warn"*/
-    [owner, alice, bob] = await ethers.getSigners();
+    [, alice, bob] = await ethers.getSigners();
     BadgeContract = await ethers.getContractFactory("HenkakuBadge");
     badgeContract = await BadgeContract.deploy();
     await badgeContract.deployed();
@@ -90,13 +88,6 @@ describe("HenkakuBadge", function () {
     });
 
     it("reverts with none owner", async () => {
-      const badgeArgs = {
-        mintable: true,
-        transerable: false,
-        amount: ethers.utils.parseUnits("100", 18),
-        tokenURI: "https://example.com",
-      };
-
       await expect(
         badgeContract.connect(bob).updateBadgeAttr(0, false, "https//hoge.com")
       ).to.be.reverted;
