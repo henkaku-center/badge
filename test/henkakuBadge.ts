@@ -142,8 +142,11 @@ describe("HenkakuBadge", function () {
         badgeContract.address,
         ethers.utils.parseUnits("10000", 18)
       );
+      const balance = await erc20.balanceOf(owner.address);
+      const mintPrice = ethers.utils.parseUnits("100", 18);
       await badgeContract.mint(1);
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+      expect(await erc20.balanceOf(owner.address)).to.be.eq(balance.sub(mintPrice));
     });
 
     it("reverts with insufficient amount", async () => {
