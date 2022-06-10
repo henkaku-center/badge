@@ -107,14 +107,22 @@ contract HenkakuBadge is ERC1155, Ownable {
     }
 
     // of can be token id or address
-    function burn(uint256 _tokenId, address _of) public{
+    function burn(uint256 _tokenId, address _of) public onlyOwner {
         require(
             _tokenId > 0 && _tokenId <= _tokenIds.current(),
             "Badge does not exist"
         );
         require(balanceOf(_of, _tokenId) > 0, "No badge to burn");
-        require(balanceOf(msg.sender, _tokenId) > 0, "Only holders can burn");
         _burn(_of, _tokenId, 1);
+    }
+
+    function burnOwn(uint256 _tokenId) public {
+        require(
+            _tokenId > 0 && _tokenId <= _tokenIds.current(),
+            "Badge does not exist"
+        );
+        require(balanceOf(msg.sender, _tokenId) > 0, "No badge to burn");
+        _burn(msg.sender, _tokenId, 1);
     }
 
     function uri(uint256 _tokenId)
