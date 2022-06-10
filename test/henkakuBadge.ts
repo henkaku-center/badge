@@ -1,19 +1,23 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { Contract, Signer } from "ethers";
+import { Contract } from "ethers";
 import { ethers } from "hardhat";
 
 describe("HenkakuBadge", function () {
-  let BadgeContract: any,
-    badgeContract: Contract,
-    owner: Signer,
-    alice: Signer,
-    bob: Signer;
+  let badgeContract: Contract,
+    owner: SignerWithAddress,
+    alice: SignerWithAddress,
+    bob: SignerWithAddress,
+    erc20: Contract;
 
   beforeEach(async () => {
-    /*eslint no-unused-vars: "warn"*/
     [owner, alice, bob] = await ethers.getSigners();
-    BadgeContract = await ethers.getContractFactory("HenkakuBadge");
-    badgeContract = await BadgeContract.deploy();
+    const MockERC20 = await ethers.getContractFactory("MockERC20");
+    erc20 = await MockERC20.deploy();
+    await erc20.deployed();
+
+    const BadgeContract = await ethers.getContractFactory("HenkakuBadge");
+    badgeContract = await BadgeContract.deploy(erc20.address);
     await badgeContract.deployed();
   });
 
@@ -90,16 +94,80 @@ describe("HenkakuBadge", function () {
     });
 
     it("reverts with none owner", async () => {
+      await expect(
+        badgeContract.connect(bob).updateBadgeAttr(0, false, "https//hoge.com")
+      ).to.be.reverted;
+    });
+  });
+
+  describe("setERC20", () => {
+    beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
         transerable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
+      await badgeContract.createBadge(badgeArgs);
+    });
 
+    it("setErc20 successfully", async () => {
+      await badgeContract.setERC20(ethers.constants.AddressZero);
+      expect(await badgeContract.erc20()).to.be.eq(
+        ethers.constants.AddressZero
+      );
+    });
+
+    it("reverts with none owner", async () => {
       await expect(
-        badgeContract.connect(bob).updateBadgeAttr(0, false, "https//hoge.com")
+        badgeContract.connect(alice).setERC20(ethers.constants.AddressZero)
       ).to.be.reverted;
+      expect(await badgeContract.erc20()).to.be.eq(erc20.address);
+    });
+  });
+
+  describe("mint", () => {
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transerable: false,
+        amount: ethers.utils.parseUnits("100", 18),
+        tokenURI: "https://example.com",
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+    it("mint successfully", async () => {
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      const balance = await erc20.balanceOf(owner.address);
+      const mintPrice = ethers.utils.parseUnits("100", 18);
+      await badgeContract.mint(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+      expect(await erc20.balanceOf(owner.address)).to.be.eq(balance.sub(mintPrice));
+    });
+
+    it("reverts with insufficient amount", async () => {
+      await erc20
+        .connect(alice)
+        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
+      await expect(badgeContract.connect(alice).mint(1)).to.be.revertedWith(
+        "INSUFFICIENT BALANCE"
+      );
+      expect(
+        await badgeContract.connect(alice).balanceOf(alice.address, 1)
+      ).to.be.eq(0);
+    });
+
+    it("reverts with non existed badge", async () => {
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await expect(badgeContract.mint(0)).to.revertedWith("Badge Not Exists");
+      await expect(badgeContract.mint(10)).to.revertedWith("Badge Not Exists");
     });
   });
 });

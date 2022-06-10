@@ -5,10 +5,13 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract HenkakuBadge is ERC1155, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    uint256 public immutable tokenAmount = 1;
+    IERC20 public erc20;
 
     struct Badge {
         bool mintable;
@@ -19,7 +22,9 @@ contract HenkakuBadge is ERC1155, Ownable {
 
     mapping(uint256 => Badge) public badges;
 
-    constructor() ERC1155("") {}
+    constructor(address _erc20) ERC1155("") {
+        setERC20(_erc20);
+    }
 
     function getBadges() public view returns (Badge[] memory) {}
 
@@ -27,6 +32,18 @@ contract HenkakuBadge is ERC1155, Ownable {
 
     event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
     event UpdateBadge(uint256 indexed id, bool mintable);
+
+    modifier onlyExistBadge(uint256 _tokenId) {
+        require(
+            _tokenId > 0 && _tokenId <= _tokenIds.current(),
+            "Badge Not Exists"
+        );
+        _;
+    }
+
+    function setERC20(address _addr) public onlyOwner {
+        erc20 = IERC20(_addr);
+    }
 
     function createBadge(Badge memory _badge) public onlyOwner {
         _tokenIds.increment();
@@ -39,26 +56,24 @@ contract HenkakuBadge is ERC1155, Ownable {
         uint256 _tokenId,
         bool _mintable,
         string memory _tokenURI
-    ) public onlyOwner {
-        require(
-            _tokenId > 0 && _tokenId <= _tokenIds.current(),
-            "Badge Not Exists"
-        );
+    ) public onlyOwner onlyExistBadge(_tokenId) {
         badges[_tokenId].mintable = _mintable;
         badges[_tokenId].tokenURI = _tokenURI;
         emit UpdateBadge(_tokenId, _mintable);
     }
 
-    function mint(uint256 _id, uint256 _amount) public {
-        // require for all badge attribute exists
-        // require amount is gte badge's amount to be piad
-        // require mintable is true
-        //  _mint(
-        //     address to,
-        //     uint256 id,
-        //     uint256 amount,
-        //     bytes memory data
-        // )
+    function mint(uint256 _tokenId) public onlyExistBadge(_tokenId) {
+        require(
+            erc20.balanceOf(msg.sender) >= badges[_tokenId].amount,
+            "INSUFFICIENT BALANCE"
+        );
+        bool success = erc20.transferFrom(
+            msg.sender,
+            address(this),
+            badges[_tokenId].amount
+        );
+        require(success, "TX FAILED");
+        _mint(msg.sender, _tokenId, tokenAmount, "");
     }
 
     // only by owner
