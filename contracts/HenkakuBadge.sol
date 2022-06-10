@@ -21,6 +21,7 @@ contract HenkakuBadge is ERC1155, Ownable {
     }
 
     mapping(uint256 => Badge) public badges;
+    mapping(address => Badge[]) private userBadges;
 
     constructor(address _erc20) ERC1155("") {
         setERC20(_erc20);
@@ -34,7 +35,9 @@ contract HenkakuBadge is ERC1155, Ownable {
         return badgeArray;
     }
 
-    function badgeOf(address _of) public returns (Badge[] memory) {}
+    function badgeOf(address _of) public view returns (Badge[] memory) {
+        return userBadges[_of];
+    }
 
     event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
     event UpdateBadge(uint256 indexed id, bool mintable);
@@ -85,6 +88,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         );
         require(success, "TX FAILED");
         _mint(msg.sender, _tokenId, tokenAmount, "");
+        userBadges[msg.sender].push(badges[_tokenId]);
     }
 
     // only by owner
