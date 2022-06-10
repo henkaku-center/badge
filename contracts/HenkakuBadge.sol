@@ -26,7 +26,13 @@ contract HenkakuBadge is ERC1155, Ownable {
         setERC20(_erc20);
     }
 
-    function getBadges() public view returns (Badge[] memory) {}
+    function getBadges() public view returns (Badge[] memory) {
+        Badge[] memory badgeArray = new Badge[](_tokenIds.current());
+        for (uint256 i = 0; i < _tokenIds.current(); i++) {
+            badgeArray[i] = badges[i + 1];
+        }
+        return badgeArray;
+    }
 
     function badgeOf(address _of) public returns (Badge[] memory) {}
 
