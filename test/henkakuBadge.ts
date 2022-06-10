@@ -347,7 +347,7 @@ describe('HenkakuBadge', function () {
     })
 
     it('returns badges', async () => {
-      expect(await badgeContract.badgeOf(owner.address)).to.be.eql([
+      expect(await badgeContract.badgesOf(owner.address)).to.be.eql([
         [true, false, ethers.utils.parseUnits('100', 18), 'https://example.com']
       ])
     })

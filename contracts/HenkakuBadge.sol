@@ -35,7 +35,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         return badgeArray;
     }
 
-    function badgeOf(address _of) public view returns (Badge[] memory) {
+    function badgesOf(address _of) public view returns (Badge[] memory) {
         return userBadges[_of];
     }
 
