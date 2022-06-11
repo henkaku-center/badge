@@ -346,10 +346,14 @@ describe('HenkakuBadge', function () {
       await badgeContract.mint(1)
     })
 
-    it('returns badges', async () => {
+    it('returns minted badges', async () => {
       expect(await badgeContract.badgesOf(owner.address)).to.be.eql([
         [true, false, ethers.utils.parseUnits('100', 18), 'https://example.com']
       ])
+    })
+
+    it('returns empty array without badges', async () => {
+      expect(await badgeContract.badgesOf(alice.address)).to.be.eql([])
     })
   })
 
