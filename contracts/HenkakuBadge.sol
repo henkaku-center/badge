@@ -83,15 +83,22 @@ contract HenkakuBadge is ERC1155, Ownable {
     }
 
     // only by owner
-    function mintByAdmin(uint256 _id, address _to) public {
-        // require for all badge attribute exists
-        // require mitable is false ?
-        //  _mint(
-        //     address to,
-        //     uint256 id,
-        //     uint256 amount,
-        //     bytes memory data
-        // )
+    function mintByAdmin(uint256 _tokenId, address _to)
+        public
+        onlyOwner
+        onlyExistBadge(_tokenId)
+    {
+        require(
+            erc20.balanceOf(_to) >= badges[_tokenId].amount,
+            "INSUFFICIENT BALANCE"
+        );
+        bool success = erc20.transferFrom(
+            _to,
+            address(this),
+            badges[_tokenId].amount
+        );
+        require(success, "TX FAILED");
+        _mint(_to, _tokenId, tokenAmount, "");
     }
 
     // or use before transfer
