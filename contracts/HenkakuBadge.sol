@@ -15,7 +15,7 @@ contract HenkakuBadge is ERC1155, Ownable {
 
     struct Badge {
         bool mintable;
-        bool transerable;
+        bool transferable;
         uint256 amount;
         string tokenURI;
     }
@@ -96,13 +96,15 @@ contract HenkakuBadge is ERC1155, Ownable {
 
     // or use before transfer
     function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public virtual override {
-        // reuqire badge's transfer attribute to be true
+        address _from,
+        address _to,
+        uint256 _tokenId,
+        uint256 _amount,
+        bytes memory _data
+    ) public virtual override onlyExistBadge(_tokenId) {
+        require(badges[_tokenId].transferable, "TRANSFER FORBIDDEN");
+
+        ERC1155.safeTransferFrom(_from, _to, _tokenId, _amount, _data);
     }
 
     // of can be token id or address
