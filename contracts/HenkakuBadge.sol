@@ -47,6 +47,11 @@ contract HenkakuBadge is ERC1155, Ownable {
         _;
     }
 
+    modifier onlyHolder(address _of, uint256 _tokenId) {
+        require(balanceOf(_of, _tokenId) > 0, "Invalid: NOT HOLDER");
+        _;
+    }
+
     function setERC20(address _addr) public onlyOwner {
         erc20 = IERC20(_addr);
     }
@@ -108,12 +113,12 @@ contract HenkakuBadge is ERC1155, Ownable {
     function burn(uint256 _tokenId, address _of)
         public
         onlyExistBadge(_tokenId)
+        onlyHolder(_of, _tokenId)
     {
         require(
             msg.sender == owner() || msg.sender == _of,
             "NOT HAVE AUTHORITY"
         );
-        require(balanceOf(_of, _tokenId) > 0, "Invalid: NOT HOLDER");
         _burn(_of, _tokenId, tokenAmount);
     }
 

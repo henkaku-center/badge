@@ -279,7 +279,12 @@ describe('HenkakuBadge', function () {
     })
 
     it("reverts with NOT HAVE AUTHORITY", async () => {
-      await expect(badgeContract.connect(alice).burn(1, bob.address)).to.revertedWith("NOT HAVE AUTHORITY")
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      )
+      await badgeContract.mint(1)
+      await expect(badgeContract.connect(alice).burn(1, owner.address)).to.revertedWith("NOT HAVE AUTHORITY")
     })
   })
 })
