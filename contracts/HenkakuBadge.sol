@@ -114,7 +114,7 @@ contract HenkakuBadge is ERC1155, Ownable {
             "NOT HAVE AUTHORITY"
         );
         require(balanceOf(_of, _tokenId) > 0, "Invalid: NOT HOLDER");
-        _burn(_of, _tokenId, 1);
+        _burn(_of, _tokenId, tokenAmount);
     }
 
     function uri(uint256 _tokenId)
