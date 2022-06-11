@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -106,23 +105,14 @@ contract HenkakuBadge is ERC1155, Ownable {
         // reuqire badge's transfer attribute to be true
     }
 
-    // of can be token id or address
-    function burn(uint256 _tokenId, address _of) public onlyOwner {
+    function burn(uint256 _tokenId, address _of) public {
+        require(msg.sender == owner() || msg.sender == _of, "NOT HAVE AUTHORITY");
         require(
             _tokenId > 0 && _tokenId <= _tokenIds.current(),
             "Badge does not exist"
         );
-        require(balanceOf(_of, _tokenId) > 0, "No badge to burn");
+        require(balanceOf(_of, _tokenId) > 0, "Invalid: NOT HOLDER");
         _burn(_of, _tokenId, 1);
-    }
-
-    function burnOwn(uint256 _tokenId) public {
-        require(
-            _tokenId > 0 && _tokenId <= _tokenIds.current(),
-            "Badge does not exist"
-        );
-        require(balanceOf(msg.sender, _tokenId) > 0, "No badge to burn");
-        _burn(msg.sender, _tokenId, 1);
     }
 
     function uri(uint256 _tokenId)
