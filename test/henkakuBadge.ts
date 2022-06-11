@@ -269,9 +269,9 @@ describe('HenkakuBadge', function () {
       expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(0)
     })
 
-    it("reverts with non existing badge", async () => {
-      await expect(badgeContract.burn(0, owner.address)).to.revertedWith("Badge does not exist")
-      await expect(badgeContract.burn(10, owner.address)).to.revertedWith("Badge does not exist")
+    it("reverts with Badge Not Exists", async () => {
+      await expect(badgeContract.burn(0, owner.address)).to.revertedWith("Badge Not Exists")
+      await expect(badgeContract.burn(10, owner.address)).to.revertedWith("Badge Not Exists")
     })
 
     it("reverts with Invalid: NOT HOLDER", async () => {

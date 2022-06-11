@@ -105,14 +105,13 @@ contract HenkakuBadge is ERC1155, Ownable {
         // reuqire badge's transfer attribute to be true
     }
 
-    function burn(uint256 _tokenId, address _of) public {
+    function burn(uint256 _tokenId, address _of)
+        public
+        onlyExistBadge(_tokenId)
+    {
         require(
             msg.sender == owner() || msg.sender == _of,
             "NOT HAVE AUTHORITY"
-        );
-        require(
-            _tokenId > 0 && _tokenId <= _tokenIds.current(),
-            "Badge does not exist"
         );
         require(balanceOf(_of, _tokenId) > 0, "Invalid: NOT HOLDER");
         _burn(_of, _tokenId, 1);
