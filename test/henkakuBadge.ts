@@ -222,4 +222,68 @@ describe('HenkakuBadge', function () {
       ])
     })
   })
+
+  describe("burn", () => {
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transerable: false,
+        amount: ethers.utils.parseUnits("100", 18),
+        tokenURI: "https://example.com",
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+    it("burns successfully", async () => {
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await badgeContract.mint(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+      await badgeContract.burn(1, owner.address);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
+    });
+
+    it("reverts with non existing badge", async () => {
+      await expect(badgeContract.burn(0, owner.address)).to.revertedWith("Badge does not exist");
+      await expect(badgeContract.burn(10, owner.address)).to.revertedWith("Badge does not exist");
+    });
+
+    it("reverts with no badge to burn", async () => {
+      await expect(badgeContract.burn(1, owner.address)).to.revertedWith("No badge to burn");
+    });
+  });
+
+  describe("burnOwn", () => {
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transerable: false,
+        amount: ethers.utils.parseUnits("100", 18),
+        tokenURI: "https://example.com",
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+    it("burns own successfully", async () => {
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await badgeContract.mint(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+      await badgeContract.burnOwn(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
+    });
+
+    it("reverts with non existing badge", async () => {
+      await expect(badgeContract.burnOwn(0)).to.revertedWith("Badge does not exist");
+      await expect(badgeContract.burnOwn(10)).to.revertedWith("Badge does not exist");
+    });
+
+    it("reverts with no badge to burn", async () => {
+      await expect(badgeContract.burnOwn(1)).to.revertedWith("No badge to burn");
+    });
+  });
 })
