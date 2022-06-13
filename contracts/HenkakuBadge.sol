@@ -88,16 +88,6 @@ contract HenkakuBadge is ERC1155, Ownable {
         onlyOwner
         onlyExistBadge(_tokenId)
     {
-        require(
-            erc20.balanceOf(_to) >= badges[_tokenId].amount,
-            "INSUFFICIENT BALANCE"
-        );
-        bool success = erc20.transferFrom(
-            _to,
-            address(this),
-            badges[_tokenId].amount
-        );
-        require(success, "TX FAILED");
         _mint(_to, _tokenId, tokenAmount, "");
     }
 

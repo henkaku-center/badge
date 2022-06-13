@@ -185,35 +185,14 @@ describe("HenkakuBadge", function () {
     });
 
     it("mint successfully", async () => {
-      await erc20.transfer(alice.address, ethers.utils.parseUnits("10000", 18));
-      await erc20
-        .connect(alice)
-        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
-      const balance = await erc20.balanceOf(alice.address);
-      const mintPrice = ethers.utils.parseUnits("100", 18);
       await badgeContract.mintByAdmin(1, alice.address);
       expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
-      expect(await erc20.balanceOf(alice.address)).to.be.eq(
-        balance.sub(mintPrice)
-      );
     });
 
     it("reverts with none owner", async () => {
       await expect(
         badgeContract.connect(alice).mintByAdmin(1, alice.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
-    });
-
-    it("reverts with insufficient amount", async () => {
-      await erc20
-        .connect(alice)
-        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
-      await expect(
-        badgeContract.mintByAdmin(1, alice.address)
-      ).to.be.revertedWith("INSUFFICIENT BALANCE");
-      expect(
-        await badgeContract.connect(alice).balanceOf(alice.address, 1)
-      ).to.be.eq(0);
     });
 
     it("reverts with non existed badge", async () => {
