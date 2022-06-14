@@ -292,61 +292,67 @@ describe("HenkakuBadge", function () {
         transerable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
-      }
-      await badgeContract.createBadge(badgeArgs)
-    })
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
 
     it("owner burns own token successfully", async () => {
       await erc20.approve(
         badgeContract.address,
         ethers.utils.parseUnits("10000", 18)
-      )
-      await badgeContract.mint(1)
-      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1)
-      await badgeContract.burn(1, owner.address)
-      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0)
-    })
+      );
+      await badgeContract.mint(1);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
+      await badgeContract.burn(1, owner.address);
+      expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
+    });
 
     it("owner burns alice's token successfully", async () => {
-      await erc20
-        .transfer(alice.address,ethers.utils.parseUnits('100', 18))
+      await erc20.transfer(alice.address, ethers.utils.parseUnits("100", 18));
       await erc20
         .connect(alice)
-        .approve(badgeContract.address, ethers.utils.parseUnits('10000', 18))
-      await badgeContract.connect(alice).mint(1)
-      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1)
-      await badgeContract.burn(1, alice.address)
-      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(0)
-    })
+        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
+      await badgeContract.connect(alice).mint(1);
+      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
+      await badgeContract.burn(1, alice.address);
+      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(0);
+    });
 
     it("alice burns own token successfully", async () => {
-      await erc20
-        .transfer(alice.address,ethers.utils.parseUnits('100', 18))
+      await erc20.transfer(alice.address, ethers.utils.parseUnits("100", 18));
       await erc20
         .connect(alice)
-        .approve(badgeContract.address, ethers.utils.parseUnits('10000', 18))
-      await badgeContract.connect(alice).mint(1)
-      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1)
-      await badgeContract.connect(alice).burn(1, alice.address)
-      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(0)
-    })
+        .approve(badgeContract.address, ethers.utils.parseUnits("10000", 18));
+      await badgeContract.connect(alice).mint(1);
+      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
+      await badgeContract.connect(alice).burn(1, alice.address);
+      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(0);
+    });
 
     it("reverts with Badge Not Exists", async () => {
-      await expect(badgeContract.burn(0, owner.address)).to.revertedWith("Badge Not Exists")
-      await expect(badgeContract.burn(10, owner.address)).to.revertedWith("Badge Not Exists")
-    })
+      await expect(badgeContract.burn(0, owner.address)).to.revertedWith(
+        "Badge Not Exists"
+      );
+      await expect(badgeContract.burn(10, owner.address)).to.revertedWith(
+        "Badge Not Exists"
+      );
+    });
 
     it("reverts with Invalid: NOT HOLDER", async () => {
-      await expect(badgeContract.burn(1, owner.address)).to.revertedWith("Invalid: NOT HOLDER")
-    })
+      await expect(badgeContract.burn(1, owner.address)).to.revertedWith(
+        "Invalid: NOT HOLDER"
+      );
+    });
 
     it("reverts with NOT HAVE AUTHORITY", async () => {
       await erc20.approve(
         badgeContract.address,
         ethers.utils.parseUnits("10000", 18)
-      )
-      await badgeContract.mint(1)
-      await expect(badgeContract.connect(alice).burn(1, owner.address)).to.revertedWith("NOT HAVE AUTHORITY")
-    })
-  })
-})
+      );
+      await badgeContract.mint(1);
+      await expect(
+        badgeContract.connect(alice).burn(1, owner.address)
+      ).to.revertedWith("NOT HAVE AUTHORITY");
+    });
+  });
+});

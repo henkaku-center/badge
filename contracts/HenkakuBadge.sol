@@ -109,7 +109,7 @@ contract HenkakuBadge is ERC1155, Ownable {
     ) public virtual override onlyExistBadge(_tokenId) {
         require(badges[_tokenId].transferable, "TRANSFER FORBIDDEN");
 
-        ERC1155.safeTransferFrom(_from, _to, _tokenId, _amount, _data);
+        _safeTransferFrom(_from, _to, _tokenId, _amount, _data);
     }
 
     function burn(uint256 _tokenId, address _of)
