@@ -98,6 +98,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         onlyExistBadge(_tokenId)
     {
         _mint(_to, _tokenId, tokenAmount, "");
+        userBadges[_to].push(badges[_tokenId]);
     }
 
     // or use before transfer

@@ -354,6 +354,13 @@ describe('HenkakuBadge', function () {
     it('returns empty array without badges', async () => {
       expect(await badgeContract.badgesOf(alice.address)).to.be.eql([])
     })
+
+    it('returns minted badges with mintByAdmin', async () => {
+      await badgeContract.mintByAdmin(1, alice.address)
+      expect(await badgeContract.badgesOf(alice.address)).to.be.eql([
+        [true, false, ethers.utils.parseUnits('100', 18), 'https://example.com']
+      ])
+    })
   })
 
   describe('burn', () => {
