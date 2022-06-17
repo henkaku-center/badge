@@ -25,7 +25,7 @@ describe("HenkakuBadge", function () {
     it("creates badges", async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -35,7 +35,7 @@ describe("HenkakuBadge", function () {
         .withArgs(1, badgeArgs.mintable, badgeArgs.amount);
       const badge = await badgeContract.badges(1);
       expect(badge.mintable).to.eq(badgeArgs.mintable);
-      expect(badge.transerable).to.eq(badgeArgs.transerable);
+      expect(badge.transferable).to.eq(badgeArgs.transferable);
       expect(badge.amount).to.eq(badgeArgs.amount);
       expect(badge.tokenURI).to.eq(badgeArgs.tokenURI);
 
@@ -44,7 +44,7 @@ describe("HenkakuBadge", function () {
         .withArgs(2, badgeArgs.mintable, badgeArgs.amount);
       const anotherBadge = await badgeContract.badges(2);
       expect(anotherBadge.mintable).to.eq(badgeArgs.mintable);
-      expect(anotherBadge.transerable).to.eq(badgeArgs.transerable);
+      expect(anotherBadge.transferable).to.eq(badgeArgs.transferable);
       expect(anotherBadge.amount).to.eq(badgeArgs.amount);
       expect(anotherBadge.tokenURI).to.eq(badgeArgs.tokenURI);
     });
@@ -52,7 +52,7 @@ describe("HenkakuBadge", function () {
     it("reverts with none owner", async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -66,7 +66,7 @@ describe("HenkakuBadge", function () {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -79,7 +79,7 @@ describe("HenkakuBadge", function () {
       ).to.emit(badgeContract, "UpdateBadge");
       const badge = await badgeContract.badges(1);
       expect(badge.mintable).to.eq(false);
-      expect(badge.transerable).to.eq(false);
+      expect(badge.transferable).to.eq(false);
       expect(badge.amount).to.eq(ethers.utils.parseUnits("100", 18));
       expect(badge.tokenURI).to.eq("https//hoge.com");
     });
@@ -104,7 +104,7 @@ describe("HenkakuBadge", function () {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -130,7 +130,7 @@ describe("HenkakuBadge", function () {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -173,48 +173,118 @@ describe("HenkakuBadge", function () {
     });
   });
 
-  describe("mintByAdmin", () => {
-    beforeEach(async () => {
-      const badgeArgs = {
-        mintable: true,
-        transerable: false,
-        amount: ethers.utils.parseUnits("100", 18),
-        tokenURI: "https://example.com",
-      };
-      await badgeContract.createBadge(badgeArgs);
-    });
-
-    it("mint successfully", async () => {
-      await badgeContract.mintByAdmin(1, alice.address);
-      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
-    });
-
-    it("reverts with none owner", async () => {
-      await expect(
-        badgeContract.connect(alice).mintByAdmin(1, alice.address)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
-    });
-
     it("reverts with non existed badge", async () => {
-      await erc20.transfer(alice.address, ethers.utils.parseUnits("10000", 18));
       await erc20.approve(
         badgeContract.address,
         ethers.utils.parseUnits("10000", 18)
       );
-      await expect(badgeContract.mintByAdmin(0, alice.address)).to.revertedWith(
-        "Badge Not Exists"
-      );
-      await expect(
-        badgeContract.mintByAdmin(10, alice.address)
-      ).to.revertedWith("Badge Not Exists");
+      await expect(badgeContract.mint(0)).to.revertedWith("Badge Not Exists");
+      await expect(badgeContract.mint(10)).to.revertedWith("Badge Not Exists");
     });
   });
 
-  describe("badges", () => {
+describe("safeTransferFrom", () => {
+  beforeEach(async () => {
+    const transferableBadgeArgs = {
+      mintable: true,
+      transferable: true,
+      amount: ethers.utils.parseUnits("100", 18),
+      tokenURI: "https://example.com",
+    };
+    await badgeContract.createBadge(transferableBadgeArgs);
+
+    const nonTransferableBadgeArgs = {
+      mintable: true,
+      transferable: false,
+      amount: ethers.utils.parseUnits("100", 18),
+      tokenURI: "https://example.com",
+    };
+    await badgeContract.createBadge(nonTransferableBadgeArgs);
+  });
+
+  it("safeTransferFrom successfully", async () => {
+    await erc20.approve(
+      badgeContract.address,
+      ethers.utils.parseUnits("10000", 18)
+    );
+    await badgeContract.mint(1);
+
+    await badgeContract.safeTransferFrom(
+      owner.address,
+      alice.address,
+      1,
+      1,
+      []
+    );
+
+    expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
+    expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
+  });
+
+  it("reverts with non existed badge", async () => {
+    await erc20.approve(
+      badgeContract.address,
+      ethers.utils.parseUnits("10000", 18)
+    );
+    await expect(badgeContract.mint(0)).to.revertedWith("Badge Not Exists");
+    await expect(badgeContract.mint(10)).to.revertedWith("Badge Not Exists");
+  });
+
+  it("reverts with non transferable budge", async () => {
+    await erc20.approve(
+      badgeContract.address,
+      ethers.utils.parseUnits("10000", 18)
+    );
+    await badgeContract.mint(2);
+
+    await expect(
+      badgeContract.safeTransferFrom(owner.address, alice.address, 2, 1, [])
+    ).to.revertedWith("TRANSFER FORBIDDEN");
+  });
+});
+
+describe("mintByAdmin", () => {
+  beforeEach(async () => {
+    const badgeArgs = {
+      mintable: true,
+      transerable: false,
+      amount: ethers.utils.parseUnits("100", 18),
+      tokenURI: "https://example.com",
+    };
+    await badgeContract.createBadge(badgeArgs);
+  });
+
+  it("mint successfully", async () => {
+    await badgeContract.mintByAdmin(1, alice.address);
+    expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
+  });
+
+  it("reverts with none owner", async () => {
+    await expect(
+      badgeContract.connect(alice).mintByAdmin(1, alice.address)
+    ).to.be.revertedWith("Ownable: caller is not the owner");
+  });
+
+  it("reverts with non existed badge", async () => {
+    await erc20.transfer(alice.address, ethers.utils.parseUnits("10000", 18));
+    await erc20.approve(
+      badgeContract.address,
+      ethers.utils.parseUnits("10000", 18)
+    );
+    await expect(badgeContract.mintByAdmin(0, alice.address)).to.revertedWith(
+      "Badge Not Exists"
+    );
+    await expect(
+      badgeContract.mintByAdmin(10, alice.address)
+    ).to.revertedWith("Badge Not Exists");
+  });
+});
+
+  describe('badges', () => {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
@@ -235,14 +305,14 @@ describe("HenkakuBadge", function () {
     beforeEach(async () => {
       const badgeArgs1 = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example1.com",
       };
       await badgeContract.createBadge(badgeArgs1);
       const badgeArgs2 = {
         mintable: true,
-        transerable: true,
+        transferable: true,
         amount: ethers.utils.parseUnits("50", 18),
         tokenURI: "https://example2.com",
       };
