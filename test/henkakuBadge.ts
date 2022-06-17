@@ -246,7 +246,7 @@ describe("HenkakuBadge", function () {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
-        transerable: false,
+        transferable: false,
         amount: ethers.utils.parseUnits("100", 18),
         tokenURI: "https://example.com",
       };
