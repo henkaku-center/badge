@@ -173,6 +173,15 @@ describe("HenkakuBadge", function () {
     });
   });
 
+  it("reverts with non existed badge", async () => {
+    await erc20.approve(
+      badgeContract.address,
+      ethers.utils.parseUnits("10000", 18)
+    );
+    await expect(badgeContract.mint(0)).to.revertedWith("Badge Not Exists");
+    await expect(badgeContract.mint(10)).to.revertedWith("Badge Not Exists");
+  });
+
   describe("safeTransferFrom", () => {
     beforeEach(async () => {
       const transferableBadgeArgs = {
@@ -230,6 +239,43 @@ describe("HenkakuBadge", function () {
       await expect(
         badgeContract.safeTransferFrom(owner.address, alice.address, 2, 1, [])
       ).to.revertedWith("TRANSFER FORBIDDEN");
+    });
+  });
+
+  describe("mintByAdmin", () => {
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: ethers.utils.parseUnits("100", 18),
+        tokenURI: "https://example.com",
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+    it("mint successfully", async () => {
+      await badgeContract.mintByAdmin(1, alice.address);
+      expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
+    });
+
+    it("reverts with none owner", async () => {
+      await expect(
+        badgeContract.connect(alice).mintByAdmin(1, alice.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("reverts with non existed badge", async () => {
+      await erc20.transfer(alice.address, ethers.utils.parseUnits("10000", 18));
+      await erc20.approve(
+        badgeContract.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await expect(badgeContract.mintByAdmin(0, alice.address)).to.revertedWith(
+        "Badge Not Exists"
+      );
+      await expect(
+        badgeContract.mintByAdmin(10, alice.address)
+      ).to.revertedWith("Badge Not Exists");
     });
   });
 

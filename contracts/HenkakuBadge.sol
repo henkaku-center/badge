@@ -88,15 +88,12 @@ contract HenkakuBadge is ERC1155, Ownable {
     }
 
     // only by owner
-    function mintByAdmin(uint256 _id, address _to) public {
-        // require for all badge attribute exists
-        // require mitable is false ?
-        //  _mint(
-        //     address to,
-        //     uint256 id,
-        //     uint256 amount,
-        //     bytes memory data
-        // )
+    function mintByAdmin(uint256 _tokenId, address _to)
+        public
+        onlyOwner
+        onlyExistBadge(_tokenId)
+    {
+        _mint(_to, _tokenId, tokenAmount, "");
     }
 
     // or use before transfer
