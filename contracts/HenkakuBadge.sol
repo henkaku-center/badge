@@ -17,10 +17,12 @@ contract HenkakuBadge is ERC1155, Ownable {
         bool mintable;
         bool transferable;
         uint256 amount;
+        uint256 maxSupply;
         string tokenURI;
     }
 
     mapping(uint256 => Badge) public badges;
+    mapping(uint256 => uint256) public totalSupply;
     mapping(address => Badge[]) private userBadges;
 
     constructor(address _erc20) ERC1155("") {
@@ -55,6 +57,14 @@ contract HenkakuBadge is ERC1155, Ownable {
         _;
     }
 
+    modifier notExceedMaxSupply(uint256 _tokenId) {
+        require(
+            badges[_tokenId].maxSupply > totalSupply[_tokenId],
+            "Invalid: Exceed Supply"
+        );
+        _;
+    }
+
     function setERC20(address _addr) public onlyOwner {
         erc20 = IERC20(_addr);
     }
@@ -63,6 +73,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         badges[newItemId] = _badge;
+        totalSupply[newItemId] = 0;
         emit NewBadge(newItemId, _badge.mintable, _badge.amount);
     }
 
@@ -76,18 +87,25 @@ contract HenkakuBadge is ERC1155, Ownable {
         emit UpdateBadge(_tokenId, _mintable);
     }
 
-    function mint(uint256 _tokenId) public onlyExistBadge(_tokenId) {
+    function mint(uint256 _tokenId)
+        public
+        onlyExistBadge(_tokenId)
+        notExceedMaxSupply(_tokenId)
+    {
         require(
             erc20.balanceOf(msg.sender) >= badges[_tokenId].amount,
             "INSUFFICIENT BALANCE"
         );
-        bool success = erc20.transferFrom(
-            msg.sender,
-            address(this),
-            badges[_tokenId].amount
-        );
-        require(success, "TX FAILED");
+        if (badges[_tokenId].amount > 0) {
+            bool success = erc20.transferFrom(
+                msg.sender,
+                address(this),
+                badges[_tokenId].amount
+            );
+            require(success, "TX FAILED");
+        }
         _mint(msg.sender, _tokenId, tokenAmount, "");
+        totalSupply[_tokenId] += 1;
         userBadges[msg.sender].push(badges[_tokenId]);
     }
 
@@ -96,8 +114,10 @@ contract HenkakuBadge is ERC1155, Ownable {
         public
         onlyOwner
         onlyExistBadge(_tokenId)
+        notExceedMaxSupply(_tokenId)
     {
         _mint(_to, _tokenId, tokenAmount, "");
+        totalSupply[_tokenId] += 1;
         userBadges[_to].push(badges[_tokenId]);
     }
 
@@ -123,6 +143,7 @@ contract HenkakuBadge is ERC1155, Ownable {
             msg.sender == owner() || msg.sender == _of,
             "NOT HAVE AUTHORITY"
         );
+        totalSupply[_tokenId] -= 1;
         _burn(_of, _tokenId, tokenAmount);
     }
 
