@@ -220,6 +220,62 @@ describe("HenkakuBadge", function () {
         "Invalid: Exceed Supply"
       );
     });
+
+    it("reverts if user exceed maxMintPerWallet", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 1
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mint(2);
+      await expect(badgeContract.mint(2)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+
+      const badgeArgs10 = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 4
+      };
+      await badgeContract.createBadge(badgeArgs10);
+      expect((await badgeContract.getBadges()).length).to.be.eq(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await expect(badgeContract.mint(3)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+    });
+
+    it("user can mint unitl maxSupply if maxMintPerWallet is 0", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 3,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 0
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mint(2);
+      await badgeContract.mint(2);
+      await badgeContract.mint(2);
+      await expect(badgeContract.mint(2)).to.revertedWith(
+        "Invalid: Exceed Supply"
+      );
+    });
   });
 
   it("reverts with non existed badge", async () => {

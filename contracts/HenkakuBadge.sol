@@ -60,7 +60,7 @@ contract HenkakuBadge is ERC1155, Ownable {
 
     modifier onlyBelowMaxMintPerWallet(address _of, uint256 _tokenId) {
         require(
-            (balanceOf(_of, _tokenId) <= badges[_tokenId].maxMintPerWallet) ||
+            (balanceOf(_of, _tokenId) < badges[_tokenId].maxMintPerWallet) ||
                 badges[_tokenId].maxMintPerWallet == 0,
             "Invalid: EXCEED MAX MINT PER WALLET"
         );
