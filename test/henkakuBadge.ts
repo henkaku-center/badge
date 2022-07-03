@@ -29,6 +29,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
 
       await expect(badgeContract.createBadge(badgeArgs))
@@ -59,6 +60,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
 
       await expect(badgeContract.connect(alice).createBadge(badgeArgs)).to.be
@@ -74,6 +76,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -114,6 +117,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -141,6 +145,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -167,6 +172,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
       expect(await badgeContract.totalSupply(2)).to.be.eq(0);
@@ -205,9 +211,66 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 1,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
       expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mint(2);
+      await expect(badgeContract.mint(2)).to.revertedWith(
+        "Invalid: Exceed Supply"
+      );
+    });
+
+    it("reverts if user exceed maxMintPerWallet", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 1
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mint(2);
+      await expect(badgeContract.mint(2)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+
+      const badgeArgs10 = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 4
+      };
+      await badgeContract.createBadge(badgeArgs10);
+      expect((await badgeContract.getBadges()).length).to.be.eq(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await badgeContract.mint(3);
+      await expect(badgeContract.mint(3)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+    });
+
+    it("user can mint unitl maxSupply if maxMintPerWallet is 0", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 3,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 0
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mint(2);
+      await badgeContract.mint(2);
       await badgeContract.mint(2);
       await expect(badgeContract.mint(2)).to.revertedWith(
         "Invalid: Exceed Supply"
@@ -232,6 +295,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(transferableBadgeArgs);
 
@@ -241,6 +305,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(nonTransferableBadgeArgs);
     });
@@ -294,6 +359,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -322,6 +388,44 @@ describe("HenkakuBadge", function () {
         badgeContract.mintByAdmin(10, alice.address)
       ).to.revertedWith("Badge Not Exists");
     });
+
+    it("reverts if user exceed maxMintPerWallet", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 1
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await expect(badgeContract.mintByAdmin(2, alice.address)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+    });
+
+    it("amdin can mint until maxSupply if maxMintPerWallet is 0", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 3,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 0
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await expect(badgeContract.mintByAdmin(2, alice.address)).to.revertedWith(
+        "Invalid: Exceed Supply"
+      );
+    });
   });
 
   describe("badges", () => {
@@ -332,6 +436,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -343,6 +448,7 @@ describe("HenkakuBadge", function () {
         ethers.utils.parseUnits("100", 18),
         ethers.BigNumber.from(10),
         "https://example.com",
+        ethers.BigNumber.from(0)
       ]);
 
       expect(await badgeContract.totalSupply(1)).to.be.eq(0);
@@ -357,6 +463,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example1.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs1);
       const badgeArgs2 = {
@@ -365,6 +472,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("50", 18),
         maxSupply: 10,
         tokenURI: "https://example2.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs2);
     });
@@ -377,6 +485,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example1.com",
+          ethers.BigNumber.from(0)
         ],
         [
           true,
@@ -384,6 +493,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("50", 18),
           ethers.BigNumber.from(10),
           "https://example2.com",
+          ethers.BigNumber.from(0)
         ],
       ]);
     });
@@ -397,6 +507,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
       await erc20.approve(
@@ -414,6 +525,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example.com",
+          ethers.BigNumber.from(0)
         ],
       ]);
     });
@@ -431,6 +543,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example.com",
+          ethers.BigNumber.from(0)
         ],
       ]);
     });
@@ -444,6 +557,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
+        maxMintPerWallet: 0
       };
       await badgeContract.createBadge(badgeArgs);
     });
