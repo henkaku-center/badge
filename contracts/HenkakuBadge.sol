@@ -19,7 +19,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         uint256 amount;
         uint256 maxSupply;
         string tokenURI;
-        uint256 maxMintPerWallet; // 0 means user can mint how much you want
+        uint256 maxMintPerWallet; // 0 means user can mint how much they want. so no limitation with minting
     }
 
     mapping(uint256 => Badge) public badges;
