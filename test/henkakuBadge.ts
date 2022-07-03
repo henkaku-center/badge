@@ -388,6 +388,44 @@ describe("HenkakuBadge", function () {
         badgeContract.mintByAdmin(10, alice.address)
       ).to.revertedWith("Badge Not Exists");
     });
+
+    it("reverts if user exceed maxMintPerWallet", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 1
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await expect(badgeContract.mintByAdmin(2, alice.address)).to.revertedWith(
+        "Invalid: EXCEED MAX MINT PER WALLET"
+      );
+    });
+
+    it("amdin can mint until maxSupply if maxMintPerWallet is 0", async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: 0,
+        maxSupply: 3,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 0
+      };
+
+      await badgeContract.createBadge(badgeArgs);
+      expect((await badgeContract.getBadges()).length).to.be.eq(2);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await badgeContract.mintByAdmin(2, alice.address);
+      await expect(badgeContract.mintByAdmin(2, alice.address)).to.revertedWith(
+        "Invalid: Exceed Supply"
+      );
+    });
   });
 
   describe("badges", () => {
