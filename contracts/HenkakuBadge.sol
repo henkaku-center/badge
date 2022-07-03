@@ -19,6 +19,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         uint256 amount;
         uint256 maxSupply;
         string tokenURI;
+        uint256 maxMintPerWallet; // 0 means user can mint how much you want
     }
 
     mapping(uint256 => Badge) public badges;
@@ -57,6 +58,15 @@ contract HenkakuBadge is ERC1155, Ownable {
         _;
     }
 
+    modifier onlyBelowMaxMintPerWallet(address _of, uint256 _tokenId) {
+        require(
+            (balanceOf(_of, _tokenId) <= badges[_tokenId].maxMintPerWallet) ||
+                badges[_tokenId].maxMintPerWallet == 0,
+            "Invalid: EXCEED MAX MINT PER WALLET"
+        );
+        _;
+    }
+
     modifier notExceedMaxSupply(uint256 _tokenId) {
         require(
             badges[_tokenId].maxSupply > totalSupply[_tokenId],
@@ -91,6 +101,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         public
         onlyExistBadge(_tokenId)
         notExceedMaxSupply(_tokenId)
+        onlyBelowMaxMintPerWallet(msg.sender, _tokenId)
     {
         require(
             erc20.balanceOf(msg.sender) >= badges[_tokenId].amount,
@@ -115,6 +126,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         onlyOwner
         onlyExistBadge(_tokenId)
         notExceedMaxSupply(_tokenId)
+        onlyBelowMaxMintPerWallet(_to, _tokenId)
     {
         _mint(_to, _tokenId, tokenAmount, "");
         totalSupply[_tokenId] += 1;
