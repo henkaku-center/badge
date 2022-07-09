@@ -178,7 +178,7 @@ contract HenkakuBadge is ERC1155, Ownable {
     function withdraw(address _token) public onlyOwner {
         IERC20 _erc20 = IERC20(_token);
         uint256 amount = _erc20.balanceOf(address(this));
-        require(amount > 0, 'INVALID: AMOUNT NOT EXIST');
+        require(amount > 0, "INVALID: AMOUNT NOT EXIST");
         _erc20.transfer(fundsAddress, amount);
         emit WithDraw(fundsAddress, _token, amount);
     }

@@ -640,7 +640,7 @@ describe("HenkakuBadge", function () {
       await badgeContract.createBadge(badgeArgs);
     });
 
-    it ('successfully withdraw', async() => {
+    it('successfully withdraw', async () => {
       const amount = ethers.utils.parseUnits("1000", 18)
       await erc20.approve(
         badgeContract.address,
@@ -654,11 +654,11 @@ describe("HenkakuBadge", function () {
       expect(await erc20.balanceOf(funds.address)).to.be.eq(amount)
     })
 
-    it ('it reverts if balance is zero', async() => {
+    it('it reverts if balance is zero', async () => {
       await expect(badgeContract.withdraw(erc20.address)).to.be.revertedWith("INVALID: AMOUNT NOT EXIST")
     })
 
-    it ('successfully withdraw with different account', async() => {
+    it('successfully withdraw with different account', async () => {
       const amount = ethers.utils.parseUnits("1000", 18)
       await erc20.approve(
         badgeContract.address,
