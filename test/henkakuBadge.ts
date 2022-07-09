@@ -8,16 +8,17 @@ describe("HenkakuBadge", function () {
     owner: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
+    funds: SignerWithAddress,
     erc20: Contract;
 
   beforeEach(async () => {
-    [owner, alice, bob] = await ethers.getSigners();
+    [owner, alice, bob, funds] = await ethers.getSigners();
     const MockERC20 = await ethers.getContractFactory("MockERC20");
     erc20 = await MockERC20.deploy();
     await erc20.deployed();
 
     const BadgeContract = await ethers.getContractFactory("HenkakuBadge");
-    badgeContract = await BadgeContract.deploy(erc20.address);
+    badgeContract = await BadgeContract.deploy(erc20.address, funds.address);
     await badgeContract.deployed();
   });
 
@@ -624,4 +625,52 @@ describe("HenkakuBadge", function () {
       ).to.revertedWith("NOT HAVE AUTHORITY");
     });
   });
+
+  describe('withdraw', () => {
+
+    beforeEach(async () => {
+      const badgeArgs = {
+        mintable: true,
+        transferable: false,
+        amount: ethers.utils.parseUnits("1000", 18),
+        maxSupply: 10,
+        tokenURI: "https://example.com",
+        maxMintPerWallet: 0
+      };
+      await badgeContract.createBadge(badgeArgs);
+    });
+
+    it ('successfully withdraw', async() => {
+      const amount = ethers.utils.parseUnits("1000", 18)
+      await erc20.approve(
+        badgeContract.address,
+        ethers.constants.MaxInt256
+      );
+      await badgeContract.mint(1);
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount)
+      expect(await erc20.balanceOf(funds.address)).to.be.eq(0)
+      await expect(badgeContract.withdraw(erc20.address)).to.emit(badgeContract, 'WithDraw')
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0)
+      expect(await erc20.balanceOf(funds.address)).to.be.eq(amount)
+    })
+
+    it ('it reverts if balance is zero', async() => {
+      await expect(badgeContract.withdraw(erc20.address)).to.be.revertedWith("INVALID: AMOUNT NOT EXIST")
+    })
+
+    it ('successfully withdraw with different account', async() => {
+      const amount = ethers.utils.parseUnits("1000", 18)
+      await erc20.approve(
+        badgeContract.address,
+        ethers.constants.MaxInt256
+      );
+      await badgeContract.mint(1)
+      await badgeContract.setFundsAddress(bob.address)
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount)
+      expect(await erc20.balanceOf(bob.address)).to.be.eq(0)
+      await expect(badgeContract.withdraw(erc20.address)).to.emit(badgeContract, 'WithDraw')
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0)
+      expect(await erc20.balanceOf(bob.address)).to.be.eq(amount)
+    })
+  })
 });
