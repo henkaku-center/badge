@@ -158,7 +158,7 @@ describe("HenkakuBadge", function () {
       );
       const balance = await erc20.balanceOf(owner.address);
       const mintPrice = ethers.utils.parseUnits("100", 18);
-      await badgeContract.mint(1);
+      expect(await badgeContract.mint(1)).to.emit(badgeContract, 'Mint').withArgs(owner.address, 1)
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
       expect(await badgeContract.totalSupply(1)).to.be.eq(1);
       expect(await erc20.balanceOf(owner.address)).to.be.eq(
@@ -366,7 +366,7 @@ describe("HenkakuBadge", function () {
     });
 
     it("mint successfully", async () => {
-      await badgeContract.mintByAdmin(1, alice.address);
+      expect(await badgeContract.mintByAdmin(1, alice.address)).to.emit(badgeContract, 'MintByAdmin').withArgs(owner.address, alice.address, 1)
       expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
     });
 
@@ -570,7 +570,7 @@ describe("HenkakuBadge", function () {
       );
       await badgeContract.mint(1);
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
-      await badgeContract.burn(1, owner.address);
+      expect(await badgeContract.burn(1, owner.address)).to.emit(badgeContract, 'BurnBadge').to.emit(1, owner.address)
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
       expect(await badgeContract.totalSupply(1)).to.be.eq(0);
     });
