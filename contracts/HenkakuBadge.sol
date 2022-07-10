@@ -12,6 +12,7 @@ contract HenkakuBadge is ERC1155, Ownable {
     Counters.Counter private _tokenIds;
     uint256 public immutable tokenAmount = 1;
     IERC20 public erc20;
+    address public fundsAddress;
 
     struct Badge {
         bool mintable;
@@ -25,9 +26,11 @@ contract HenkakuBadge is ERC1155, Ownable {
     mapping(uint256 => Badge) public badges;
     mapping(uint256 => uint256) public totalSupply;
     mapping(address => Badge[]) private userBadges;
+    event WithDraw(address indexed to, address token, uint256 amount);
 
-    constructor(address _erc20) ERC1155("") {
+    constructor(address _erc20, address _fundsAddress) ERC1155("") {
         setERC20(_erc20);
+        setFundsAddress(_fundsAddress);
     }
 
     function getBadges() public view returns (Badge[] memory) {
@@ -85,6 +88,10 @@ contract HenkakuBadge is ERC1155, Ownable {
         badges[newItemId] = _badge;
         totalSupply[newItemId] = 0;
         emit NewBadge(newItemId, _badge.mintable, _badge.amount);
+    }
+
+    function setFundsAddress(address _fundsAddress) public onlyOwner {
+        fundsAddress = _fundsAddress;
     }
 
     function updateBadgeAttr(
@@ -166,5 +173,13 @@ contract HenkakuBadge is ERC1155, Ownable {
         returns (string memory)
     {
         return badges[_tokenId].tokenURI;
+    }
+
+    function withdraw(address _token) public onlyOwner {
+        IERC20 _erc20 = IERC20(_token);
+        uint256 amount = _erc20.balanceOf(address(this));
+        require(amount > 0, "INVALID: AMOUNT NOT EXIST");
+        _erc20.transfer(fundsAddress, amount);
+        emit WithDraw(fundsAddress, _token, amount);
     }
 }
