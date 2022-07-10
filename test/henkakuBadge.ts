@@ -30,7 +30,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
 
       await expect(badgeContract.createBadge(badgeArgs))
@@ -61,7 +61,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
 
       await expect(badgeContract.connect(alice).createBadge(badgeArgs)).to.be
@@ -77,7 +77,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -118,7 +118,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -146,7 +146,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -158,7 +158,9 @@ describe("HenkakuBadge", function () {
       );
       const balance = await erc20.balanceOf(owner.address);
       const mintPrice = ethers.utils.parseUnits("100", 18);
-      await badgeContract.mint(1);
+      expect(await badgeContract.mint(1))
+        .to.emit(badgeContract, "Mint")
+        .withArgs(owner.address, 1);
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
       expect(await badgeContract.totalSupply(1)).to.be.eq(1);
       expect(await erc20.balanceOf(owner.address)).to.be.eq(
@@ -173,7 +175,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
       expect(await badgeContract.totalSupply(2)).to.be.eq(0);
@@ -212,7 +214,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 1,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
       expect((await badgeContract.getBadges()).length).to.be.eq(2);
@@ -229,7 +231,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 1
+        maxMintPerWallet: 1,
       };
 
       await badgeContract.createBadge(badgeArgs);
@@ -245,7 +247,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 4
+        maxMintPerWallet: 4,
       };
       await badgeContract.createBadge(badgeArgs10);
       expect((await badgeContract.getBadges()).length).to.be.eq(3);
@@ -265,7 +267,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 3,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
 
       await badgeContract.createBadge(badgeArgs);
@@ -296,7 +298,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(transferableBadgeArgs);
 
@@ -306,7 +308,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(nonTransferableBadgeArgs);
     });
@@ -360,13 +362,15 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
 
     it("mint successfully", async () => {
-      await badgeContract.mintByAdmin(1, alice.address);
+      expect(await badgeContract.mintByAdmin(1, alice.address))
+        .to.emit(badgeContract, "MintByAdmin")
+        .withArgs(owner.address, alice.address, 1);
       expect(await badgeContract.balanceOf(alice.address, 1)).to.be.eq(1);
     });
 
@@ -397,7 +401,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 1
+        maxMintPerWallet: 1,
       };
 
       await badgeContract.createBadge(badgeArgs);
@@ -415,7 +419,7 @@ describe("HenkakuBadge", function () {
         amount: 0,
         maxSupply: 3,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
 
       await badgeContract.createBadge(badgeArgs);
@@ -437,7 +441,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -449,7 +453,7 @@ describe("HenkakuBadge", function () {
         ethers.utils.parseUnits("100", 18),
         ethers.BigNumber.from(10),
         "https://example.com",
-        ethers.BigNumber.from(0)
+        ethers.BigNumber.from(0),
       ]);
 
       expect(await badgeContract.totalSupply(1)).to.be.eq(0);
@@ -464,7 +468,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example1.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs1);
       const badgeArgs2 = {
@@ -473,7 +477,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("50", 18),
         maxSupply: 10,
         tokenURI: "https://example2.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs2);
     });
@@ -486,7 +490,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example1.com",
-          ethers.BigNumber.from(0)
+          ethers.BigNumber.from(0),
         ],
         [
           true,
@@ -494,7 +498,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("50", 18),
           ethers.BigNumber.from(10),
           "https://example2.com",
-          ethers.BigNumber.from(0)
+          ethers.BigNumber.from(0),
         ],
       ]);
     });
@@ -508,7 +512,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
       await erc20.approve(
@@ -526,7 +530,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example.com",
-          ethers.BigNumber.from(0)
+          ethers.BigNumber.from(0),
         ],
       ]);
     });
@@ -544,7 +548,7 @@ describe("HenkakuBadge", function () {
           ethers.utils.parseUnits("100", 18),
           ethers.BigNumber.from(10),
           "https://example.com",
-          ethers.BigNumber.from(0)
+          ethers.BigNumber.from(0),
         ],
       ]);
     });
@@ -558,7 +562,7 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("100", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
@@ -570,7 +574,9 @@ describe("HenkakuBadge", function () {
       );
       await badgeContract.mint(1);
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(1);
-      await badgeContract.burn(1, owner.address);
+      expect(await badgeContract.burn(1, owner.address))
+        .to.emit(badgeContract, "BurnBadge")
+        .to.emit(1, owner.address);
       expect(await badgeContract.balanceOf(owner.address, 1)).to.be.eq(0);
       expect(await badgeContract.totalSupply(1)).to.be.eq(0);
     });
@@ -626,8 +632,7 @@ describe("HenkakuBadge", function () {
     });
   });
 
-  describe('withdraw', () => {
-
+  describe("withdraw", () => {
     beforeEach(async () => {
       const badgeArgs = {
         mintable: true,
@@ -635,42 +640,44 @@ describe("HenkakuBadge", function () {
         amount: ethers.utils.parseUnits("1000", 18),
         maxSupply: 10,
         tokenURI: "https://example.com",
-        maxMintPerWallet: 0
+        maxMintPerWallet: 0,
       };
       await badgeContract.createBadge(badgeArgs);
     });
 
-    it('successfully withdraw', async () => {
-      const amount = ethers.utils.parseUnits("1000", 18)
-      await erc20.approve(
-        badgeContract.address,
-        ethers.constants.MaxInt256
-      );
+    it("successfully withdraw", async () => {
+      const amount = ethers.utils.parseUnits("1000", 18);
+      await erc20.approve(badgeContract.address, ethers.constants.MaxInt256);
       await badgeContract.mint(1);
-      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount)
-      expect(await erc20.balanceOf(funds.address)).to.be.eq(0)
-      await expect(badgeContract.withdraw(erc20.address)).to.emit(badgeContract, 'WithDraw')
-      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0)
-      expect(await erc20.balanceOf(funds.address)).to.be.eq(amount)
-    })
-
-    it('it reverts if balance is zero', async () => {
-      await expect(badgeContract.withdraw(erc20.address)).to.be.revertedWith("INVALID: AMOUNT NOT EXIST")
-    })
-
-    it('successfully withdraw with different account', async () => {
-      const amount = ethers.utils.parseUnits("1000", 18)
-      await erc20.approve(
-        badgeContract.address,
-        ethers.constants.MaxInt256
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount);
+      expect(await erc20.balanceOf(funds.address)).to.be.eq(0);
+      await expect(badgeContract.withdraw(erc20.address)).to.emit(
+        badgeContract,
+        "WithDraw"
       );
-      await badgeContract.mint(1)
-      await badgeContract.setFundsAddress(bob.address)
-      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount)
-      expect(await erc20.balanceOf(bob.address)).to.be.eq(0)
-      await expect(badgeContract.withdraw(erc20.address)).to.emit(badgeContract, 'WithDraw')
-      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0)
-      expect(await erc20.balanceOf(bob.address)).to.be.eq(amount)
-    })
-  })
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0);
+      expect(await erc20.balanceOf(funds.address)).to.be.eq(amount);
+    });
+
+    it("it reverts if balance is zero", async () => {
+      await expect(badgeContract.withdraw(erc20.address)).to.be.revertedWith(
+        "INVALID: AMOUNT NOT EXIST"
+      );
+    });
+
+    it("successfully withdraw with different account", async () => {
+      const amount = ethers.utils.parseUnits("1000", 18);
+      await erc20.approve(badgeContract.address, ethers.constants.MaxInt256);
+      await badgeContract.mint(1);
+      await badgeContract.setFundsAddress(bob.address);
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(amount);
+      expect(await erc20.balanceOf(bob.address)).to.be.eq(0);
+      await expect(badgeContract.withdraw(erc20.address)).to.emit(
+        badgeContract,
+        "WithDraw"
+      );
+      expect(await erc20.balanceOf(badgeContract.address)).to.be.eq(0);
+      expect(await erc20.balanceOf(bob.address)).to.be.eq(amount);
+    });
+  });
 });

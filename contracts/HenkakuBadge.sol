@@ -27,6 +27,15 @@ contract HenkakuBadge is ERC1155, Ownable {
     mapping(uint256 => uint256) public totalSupply;
     mapping(address => Badge[]) private userBadges;
     event WithDraw(address indexed to, address token, uint256 amount);
+    event Mint(address indexed minter, uint256 indexed tokenId);
+    event MintByAdmin(
+        address indexed minter,
+        address indexed holder,
+        uint256 indexed tokenId
+    );
+    event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
+    event UpdateBadge(uint256 indexed id, bool mintable);
+    event BurnBadge(uint256 indexed id, address indexed holder);
 
     constructor(address _erc20, address _fundsAddress) ERC1155("") {
         setERC20(_erc20);
@@ -44,9 +53,6 @@ contract HenkakuBadge is ERC1155, Ownable {
     function badgesOf(address _of) public view returns (Badge[] memory) {
         return userBadges[_of];
     }
-
-    event NewBadge(uint256 indexed id, bool mintable, uint256 amount);
-    event UpdateBadge(uint256 indexed id, bool mintable);
 
     modifier onlyExistBadge(uint256 _tokenId) {
         require(
@@ -125,6 +131,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         _mint(msg.sender, _tokenId, tokenAmount, "");
         totalSupply[_tokenId] += 1;
         userBadges[msg.sender].push(badges[_tokenId]);
+        emit Mint(msg.sender, _tokenId);
     }
 
     // only by owner
@@ -138,6 +145,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         _mint(_to, _tokenId, tokenAmount, "");
         totalSupply[_tokenId] += 1;
         userBadges[_to].push(badges[_tokenId]);
+        emit MintByAdmin(msg.sender, _to, _tokenId);
     }
 
     // or use before transfer
@@ -164,6 +172,7 @@ contract HenkakuBadge is ERC1155, Ownable {
         );
         totalSupply[_tokenId] -= 1;
         _burn(_of, _tokenId, tokenAmount);
+        emit BurnBadge(_tokenId, _of);
     }
 
     function uri(uint256 _tokenId)
