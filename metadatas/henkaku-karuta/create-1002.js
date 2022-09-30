@@ -1,0 +1,1 @@
+export const create = [true,true,100000000000000000000,25,"https://bafkreidxzv5h66tifjbgznb4iruu5jwhffcr6hg56och6sfzolcvdon5fa.ipfs.w3s.link/?filename=description-henkaku-karuta-1002.json",3]
